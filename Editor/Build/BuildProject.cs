@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -29,7 +29,7 @@ public static class BuildProject
         PerformBuild(buildConfigs);
     }
 
-    public static void BuildSingle(string keyChain, BuildOptions options = BuildOptions.None)
+    public static void BuildSingle(string keyChain, BuildOptions options)
     {
         string[] buildConfigs = new string[] { keyChain };
         PerformBuild(buildConfigs, options);
@@ -324,13 +324,8 @@ public static class BuildProject
     {
         bool success = true;
 
-        // Get build options.
-        if (releaseType.developmentBuild)
-            options |= BuildOptions.Development;
-        if (releaseType.allowDebugging)
-            options |= BuildOptions.AllowDebugging;
-        if (releaseType.enableHeadlessMode)
-            options |= BuildOptions.EnableHeadlessMode;
+        if (options == BuildOptions.None)
+            options = releaseType.buildOptions;
 
         // Generate build path.
         string buildPath = GenerateBuildPath(BuildSettings.basicSettings.buildPath, releaseType, platform, architecture, distribution, buildTime);
@@ -339,6 +334,7 @@ public static class BuildProject
         // Save current user defines, and then set target defines.
         string preBuildDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(platform.targetGroup);
         string buildDefines = GenerateDefaultDefines(releaseType, platform, architecture, distribution);
+        string preBuildBundleIdentifier = PlayerSettings.applicationIdentifier;
         buildDefines = MergeDefines(preBuildDefines, buildDefines);
 
         PlayerSettings.SetScriptingDefineSymbolsForGroup(platform.targetGroup, buildDefines);
@@ -354,8 +350,7 @@ public static class BuildProject
         // Set bundle info.
         // Unfortunately, there's not a good way to do this pre-5.6 that doesn't break building w/ batch mode.
 #if UNITY_5_6_OR_NEWER
-        string preBuildBundleIdentifier = PlayerSettings.GetApplicationIdentifier(platform.targetGroup);
-        PlayerSettings.SetApplicationIdentifier(platform.targetGroup, releaseType.bundleIndentifier);
+        PlayerSettings.SetApplicationIdentifier(platform.targetGroup, releaseType.bundleIdentifier);
 #endif
 
         // Apply build variant.
