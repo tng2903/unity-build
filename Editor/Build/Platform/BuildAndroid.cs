@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 
 namespace SuperSystems.UnityBuild
 {
@@ -38,7 +39,9 @@ public class BuildAndroid : BuildPlatform
             variants = new BuildVariant[] {
                 new BuildVariant("Device Type", new string[] { "FAT", "ARMv7", "x86" }, 0),
                 new BuildVariant("Texture Compression", new string[] { "ETC", "ETC2", "ASTC", "DXT", "PVRTC", "ATC", "Generic" }, 0),
-                new BuildVariant("Build System", new string[] { "Internal", "Gradle", "ADT (Legacy)" }, 0)
+                new BuildVariant("Build System", new string[] { "Internal", "Gradle", "ADT (Legacy)" }, 0),
+                new BuildVariant("Export Project", new string[] { "true", "false"}, 1),
+                new BuildVariant("Build App Bundle", new string[] { "true", "false"}, 1)
             };
         }
     }
@@ -58,11 +61,27 @@ public class BuildAndroid : BuildPlatform
                 case "Build System":
                     SetBuildSystem(variantOption.variantKey);
                     break;
+                case "Export Project":
+                    SetExportType(variantOption.variantKey);
+                    break;
+                case "Build App Bundle":
+                    SetBuildAppBundle(variantOption.variantKey);
+                    break;                
             }
         }
     }
 
-    private void SetDeviceType(string key)
+        private void SetExportType(string variantKey)
+        {
+            EditorUserBuildSettings.exportAsGoogleAndroidProject = bool.Parse(variantKey);
+        }
+
+        private void SetBuildAppBundle(string variantKey)
+        {
+            EditorUserBuildSettings.buildAppBundle = bool.Parse(variantKey);
+        }
+
+        private void SetDeviceType(string key)
     {
 #if UNITY_2018_1_OR_NEWER
         PlayerSettings.Android.targetArchitectures = (AndroidArchitecture)System.Enum.Parse(typeof(AndroidArchitecture), key);
